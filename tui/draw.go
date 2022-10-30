@@ -11,6 +11,7 @@ import (
 type Canvas struct {
 	Width  int
 	Height int
+	state  *term.State
 }
 
 func CreateCanvas() Canvas {
@@ -21,9 +22,15 @@ func CreateCanvas() Canvas {
 
 	log.Info().Int("width", width).Int("height", height).Msg("Terminal size")
 
+	state, err := term.MakeRaw(0)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to set terminal to raw")
+	}
+
 	canvas := Canvas{
 		Width:  width,
 		Height: height,
+		state:  state,
 	}
 
 	canvas.Batch(func(b *Batch) {
@@ -46,6 +53,11 @@ func (canvas *Canvas) Batch(drawer func(*Batch)) {
 	drawer(&batch)
 
 	fmt.Print(batch.input)
+}
+
+func (canvas *Canvas) Close() {
+	canvas.Batch(func(b *Batch) { b.Clear() })
+	term.Restore(0, canvas.state)
 }
 
 type Batch struct {
