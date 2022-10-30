@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"fmt"
+	"csview/tui"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -14,7 +15,22 @@ var openCmd = &cobra.Command{
 }
 
 func runOpen(cmd *cobra.Command, args []string) {
-	fmt.Println(args)
+	canvas := tui.CreateCanvas()
+
+	canvas.Batch(func(b *tui.Batch) {
+		b.PutString(0, 0, "hi")
+	})
+
+	defer canvas.Batch(func(b *tui.Batch) { b.Clear() })
+
+	time.Sleep(time.Second)
+
+	canvas.Batch(func(b *tui.Batch) {
+		b.Clear()
+		b.PutString(1, 1, "hi1")
+	})
+
+	time.Sleep(time.Second)
 }
 
 func init() {
