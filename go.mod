@@ -3,6 +3,7 @@ module csview
 go 1.19
 
 require (
+	github.com/franela/goblin v0.0.0-20211003143422-0a4f594942bf
 	github.com/rs/zerolog v1.28.0
 	github.com/spf13/cobra v1.6.1
 	golang.org/x/term v0.1.0
