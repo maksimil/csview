@@ -1,6 +1,7 @@
 package src
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/rs/zerolog/log"
@@ -73,25 +74,25 @@ func DrawFunction(b *Batch, state_ptr *DrawState) {
 
 	accumulated_x := 0
 	for column_index := 0; column_index < column_count; column_index++ {
-		column_width := make(chan int)
-		go func() {
-			column_width_calculated := 1
+		column_width := 0
 
-			for _, csv_line := range state_ptr.Document.Data {
-				if column_index < len(csv_line) && len(csv_line[column_index]) > column_width_calculated {
-					column_width_calculated = len(csv_line[column_index])
-				}
-			}
-
-			column_width <- column_width_calculated
-		}()
-
-		for line_index, csv_line := range state_ptr.Document.Data {
-			if column_index < len(csv_line) {
-				b.PutStringf(accumulated_x, line_index, csv_line[column_index])
+		for _, csv_line := range state_ptr.Document.Data {
+			if column_index < len(csv_line) && len(csv_line[column_index]) > column_width {
+				column_width = len(csv_line[column_index])
 			}
 		}
 
-		accumulated_x += <-column_width + 1
+		b.PutStringf(accumulated_x, 0, "+%s", strings.Repeat("-", column_width))
+
+		for line_index, csv_line := range state_ptr.Document.Data {
+			if column_index < len(csv_line) {
+				b.PutStringf(accumulated_x, 2*line_index+1, "|%s", csv_line[column_index])
+			}
+
+			b.PutStringf(accumulated_x, 2*line_index+2,
+				"+%s", strings.Repeat("-", column_width))
+		}
+
+		accumulated_x += column_width + 1
 	}
 }
