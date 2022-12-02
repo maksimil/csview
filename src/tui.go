@@ -73,7 +73,7 @@ func (batch *Batch) printf(s string, a ...any) {
 	batch.input += fmt.Sprintf(s, a...)
 }
 
-func (batch *Batch) Mv(x, y int32) {
+func (batch *Batch) Mv(x, y int) {
 	xop := ""
 	yop := ""
 
@@ -88,12 +88,12 @@ func (batch *Batch) Mv(x, y int32) {
 	batch.printf("\x1b[H%v%v", xop, yop)
 }
 
-func (batch *Batch) PutString(x, y int32, s string) {
+func (batch *Batch) PutString(x, y int, s string) {
 	batch.Mv(x, y)
 	batch.print(s)
 }
 
-func (batch *Batch) PutStringf(x, y int32, s string, args ...any) {
+func (batch *Batch) PutStringf(x, y int, s string, args ...any) {
 	batch.PutString(x, y, fmt.Sprintf(s, args...))
 }
 
