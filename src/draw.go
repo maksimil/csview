@@ -92,6 +92,6 @@ func DrawFunction(b *Batch, state_ptr *DrawState) {
 			}
 		}
 
-		accumulated_x += <-column_width
+		accumulated_x += <-column_width + 1
 	}
 }
