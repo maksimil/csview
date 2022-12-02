@@ -4,6 +4,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gookit/color"
 	"github.com/rs/zerolog/log"
 )
 
@@ -61,11 +62,26 @@ func RunDrawRoutine() DrawRoutineCommunication {
 	return communication
 }
 
+// const (
+//   BOX_DRAWING_HORIZONTAL = "─"
+//   BOX_DRAWING_VERTICAL   = "│"
+//   BOX_DRAWING_CROSS      = "┼"
+// )
+
 const (
-	BOX_DRAWING_HORIZONTAL = "─"
-	BOX_DRAWING_VERTICAL   = "│"
-	BOX_DRAWING_CROSS      = "┼"
+	BOX_DRAWING_HORIZONTAL = "━"
+	BOX_DRAWING_VERTICAL   = "┃"
+	BOX_DRAWING_CROSS      = "╋"
 )
+
+var (
+	BORDER_COLOR = color.New(color.FgGray, color.BgBlack)
+)
+
+func SHorizontalDivider(width int) string {
+	return BORDER_COLOR.Sprintf(
+		"%s%s", BOX_DRAWING_CROSS, strings.Repeat(BOX_DRAWING_HORIZONTAL, width))
+}
 
 func DrawFunction(b *Batch, state_ptr *DrawState) {
 	b.Clear()
@@ -89,17 +105,14 @@ func DrawFunction(b *Batch, state_ptr *DrawState) {
 		}
 
 		// drawing the table
-		b.PutStringf(accumulated_x, 0,
-			"%s%s", BOX_DRAWING_CROSS, strings.Repeat(BOX_DRAWING_HORIZONTAL, column_width))
+		b.PutString(accumulated_x, 0, SHorizontalDivider(column_width))
 		for line_index, csv_line := range state_ptr.Document.Data {
 			s := ""
 			if column_index < len(csv_line) {
 				s = csv_line[column_index]
 			}
-			b.PutStringf(accumulated_x, 2*line_index+1, "%s%s", BOX_DRAWING_VERTICAL, s)
-
-			b.PutStringf(accumulated_x, 2*line_index+2,
-				"%s%s", BOX_DRAWING_CROSS, strings.Repeat(BOX_DRAWING_HORIZONTAL, column_width))
+			b.PutStringf(accumulated_x, 2*line_index+1, "%s%s", BORDER_COLOR.Sprint(BOX_DRAWING_VERTICAL), s)
+			b.PutStringf(accumulated_x, 2*line_index+2, SHorizontalDivider(column_width))
 		}
 
 		accumulated_x += column_width + 1
