@@ -11,7 +11,7 @@ func RunOpen(cmd *cobra.Command, args []string) {
 	draw_communication.StateUpdate <- StateUpdate
 
 	{
-		csv_source := "hi;hi;123\nhii;i;34"
+		csv_source := "Name;Age\nAnderson;1\nVV;10"
 		draw_communication.DrawState.Mutex.Lock()
 		draw_communication.DrawState.Document = CsvDocument{
 			Path: "path",
@@ -24,7 +24,7 @@ func RunOpen(cmd *cobra.Command, args []string) {
 	time.Sleep(time.Second)
 
 	{
-		csv_source := "hi;hi;1234\nhii;;i;34"
+		csv_source := "Name;Age\nAnderson;1\nVV;12"
 		draw_communication.DrawState.Mutex.Lock()
 		draw_communication.DrawState.Document = CsvDocument{
 			Path: "path",
