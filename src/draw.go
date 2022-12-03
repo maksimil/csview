@@ -10,7 +10,6 @@ import (
 )
 
 type DrawState struct {
-	Mutex    sync.Mutex
 	Document CsvDocument
 }
 
@@ -22,18 +21,38 @@ const (
 )
 
 type DrawRoutineCommunication struct {
-	StateUpdate chan UpdateMessage
-	TuiClosed   chan bool
-	DrawState   *DrawState
+	StateUpdate    chan UpdateMessage
+	TuiClosed      chan bool
+	DrawState      *DrawState
+	DrawStateMutex *sync.Mutex
+}
+
+func CreateCommunication() DrawRoutineCommunication {
+	state := DrawState{}
+	var mutex sync.Mutex
+
+	return DrawRoutineCommunication{
+		StateUpdate:    make(chan UpdateMessage),
+		TuiClosed:      make(chan bool),
+		DrawState:      &state,
+		DrawStateMutex: &mutex,
+	}
+}
+
+func (communication *DrawRoutineCommunication) UpdateState(updater func(*DrawState)) {
+	communication.DrawStateMutex.Lock()
+	updater(communication.DrawState)
+	communication.DrawStateMutex.Unlock()
+	communication.StateUpdate <- StateUpdate
+}
+
+func (communication *DrawRoutineCommunication) Close() {
+	communication.StateUpdate <- Exit
+	<-communication.TuiClosed
 }
 
 func RunDrawRoutine() DrawRoutineCommunication {
-	draw_state := DrawState{}
-	communication := DrawRoutineCommunication{}
-
-	communication.StateUpdate = make(chan UpdateMessage)
-	communication.TuiClosed = make(chan bool)
-	communication.DrawState = &draw_state
+	communication := CreateCommunication()
 
 	go func() {
 		canvas := CreateCanvas()
@@ -50,15 +69,16 @@ func RunDrawRoutine() DrawRoutineCommunication {
 			}
 
 			if message == StateUpdate {
-				draw_state.Mutex.Lock()
+				communication.DrawStateMutex.Lock()
 				canvas.Batch(func(b *Batch) {
-					DrawFunction(b, &draw_state)
+					DrawFunction(b, communication.DrawState)
 				})
-				draw_state.Mutex.Unlock()
+				communication.DrawStateMutex.Unlock()
 			}
 		}
-
 	}()
+
+	communication.StateUpdate <- StateUpdate
 
 	return communication
 }
